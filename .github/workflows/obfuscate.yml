@@ -1,0 +1,38 @@
+name: Obfuscate and Commit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  obfuscate-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install PHP
+      run: sudo apt-get install -y php-cli git
+
+    - name: Clone Obfuscator
+      run: git clone https://github.com/pk-fr/yakpro-po.git obfuscator
+
+    - name: Obfuscate code
+      run: php obfuscator/yakpro-po.php -o ./output ./source
+
+    - name: Replace source code
+      run: |
+        rm -rf ./source
+        mv ./output ./source
+
+    - name: Commit and push
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        git commit -m "Obfuscated code"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
